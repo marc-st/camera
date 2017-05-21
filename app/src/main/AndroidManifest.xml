@@ -12,8 +12,8 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -22,11 +22,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAscjhxxhE80yOuxd6JV75mriOjJysqRRw"/>
-
+            android:value="AIzaSyAscjhxxhE80yOuxd6JV75mriOjJysqRRw" />
 
         <activity
             android:name=".MainActivity"
@@ -41,7 +39,12 @@
         <activity android:name=".PhotoFeed" />
         <activity
             android:name=".Map"
-            android:label="@string/title_activity_map"></activity>
+            android:label="@string/title_activity_map" />
+
+        <service
+            android:name=".DownloadImageService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

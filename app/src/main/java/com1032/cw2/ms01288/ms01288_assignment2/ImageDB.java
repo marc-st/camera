@@ -28,10 +28,11 @@ public class ImageDB extends SQLiteOpenHelper {
     }
 
     private void createTable(SQLiteDatabase db) {
-        // immediately create table when imageDB instance created
+        /** immediately create table when imageDB instance created
+         *  this table holds the byte array as well as latitude and longitude
+         *  coordinates */
         String createSQL = "CREATE TABLE " + IMAGE_TABLE_NAME + "(" +
                 "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "TIMESTAMP TEXT, " +
                 "IMAGEDATA BLOB, " +
                 "LAT REAL, " +
                 "LON REAL);";
@@ -41,6 +42,7 @@ public class ImageDB extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
+        // remove then re-create image table
         String dropSQL = "DROP TABLE IF EXISTS " + IMAGE_TABLE_NAME + ";";
         db.execSQL(dropSQL);
 
@@ -55,15 +57,22 @@ public class ImageDB extends SQLiteOpenHelper {
 
         createTable(db);
     }
-    public void insertData(String time, byte[] imageData, double lat, double lon){
+    public void insertData(byte[] imageData, double lat, double lon){
+
         SQLiteDatabase dbImages = this.getWritableDatabase();
 
+        /** add the row of data in a ContentValues
+         * to prevent imageData byte array from
+         * being subject to toString()
+         */
         dbImages.insert("images", null, createContentValues(imageData, lat, lon));
         this.close();
     }
 
     private ContentValues createContentValues(byte[] image, double lat, double lon) {
+
         ContentValues cv = new ContentValues();
+
         cv.put("IMAGEDATA", image);
         cv.put("LAT", lat);
         cv.put("LON", lon);

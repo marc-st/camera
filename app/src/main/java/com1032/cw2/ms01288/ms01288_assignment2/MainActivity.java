@@ -66,10 +66,8 @@ public class MainActivity extends AppCompatActivity {
                     mLon = loc.getLongitude();
                 }
 
-                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-
                 // each argument will be stored in a separate column of database
-                imageDB.insertData(timeStamp, data, mLat, mLon);
+                imageDB.insertData(data, mLat, mLon);
             }
         };
         preview.setOnClickListener(new View.OnClickListener() {
@@ -82,33 +80,27 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        Log.v("onPaused", "activity paused");
         releaseCamera();              // release the camera when activity paused
     }
     private void releaseCamera(){
         if (mCamera != null){
             mCamera.release();        // release the camera for other applications
-            mCamera = null;
+            mCamera = null;           // set Camera object back to null
             mPreview.getHolder().removeCallback(mPreview);
         }
     }
     @Override
     protected void onResume() {
         super.onResume();
-        Log.v("onResume","activity resumed");
         if (mCamera == null) {
-
             // open the Camera
             mCamera = getCameraInstance();
-
             // recreate the CameraPreview as done in onCreate()
             mPreview = new CameraPreview(this, mCamera);
             FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
             preview.addView(mPreview);
-
         }
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -117,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // open PhotoFeed activity
         Intent feedIntent = new Intent(this,PhotoFeed.class);
         startActivity(feedIntent);
         return true;
