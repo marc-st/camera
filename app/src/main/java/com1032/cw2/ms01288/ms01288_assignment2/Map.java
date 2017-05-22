@@ -1,7 +1,9 @@
 package com1032.cw2.ms01288.ms01288_assignment2;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.location.Location;
@@ -31,6 +33,9 @@ public class Map extends Activity implements OnMapReadyCallback, GoogleMap.OnMap
 
     private double userLatitude;
     private double userLongitude;
+
+    private MyReceiver receiver;
+    public static final String LOCATION_RECEIVED = "LOCATION_RECEIVED";
 
     // The following are used for the shake detection
     private SensorManager mSensorManager;
@@ -66,30 +71,6 @@ public class Map extends Activity implements OnMapReadyCallback, GoogleMap.OnMap
         userLatitude = loc.getLatitude();
         userLongitude = loc.getLongitude();
 
-        // listen for changes in the device's location
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
-                new LocationListener() {
-                    public void onLocationChanged(Location location) {
-                        if(map != null) {
-                            // add a map marker at the new position
-                            map.addMarker(new MarkerOptions()
-                                    .position(new LatLng(location.getLatitude(), location.getLongitude()))
-                                    .title("New position"));
-                        }
-                            float[] results = new float[1];
-                            Location.distanceBetween(location.getLatitude(), location.getLongitude(),
-                                    userLatitude, userLongitude,
-                                    results);
-                            Toast.makeText(getApplicationContext(),
-                                    results +  "away from where picture was taken", Toast.LENGTH_LONG).show();
-                    }
-                    @Override
-                    public void onStatusChanged(String provider, int status, Bundle extras) {}
-                    @Override
-                    public void onProviderEnabled(String provider) {}
-                    @Override
-                    public void onProviderDisabled(String provider) {}
-                });
         // SensorManager and ShakeDetector initialization
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager
@@ -108,7 +89,21 @@ public class Map extends Activity implements OnMapReadyCallback, GoogleMap.OnMap
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(userLatitude, userLongitude), 14.0f));
             }
         });
+    }
+    protected void onStart() {
 
+        // register a receiver to listen for a broadcast back from LocationListenerService
+        // latitude and longitude coordinate will be sent back within the intent
+        // intent filter will match the filter which is set in LocationListenerService
+        receiver = new MyReceiver();
+        IntentFilter filter = new IntentFilter(LOCATION_RECEIVED);
+        registerReceiver(receiver, filter);
+
+        Intent intent = new Intent(Map.this, LocationListenerService.class);
+        // start a service to listen for Location updates
+        startService(intent);
+
+        super.onStart();
     }
     @Override
     public void onMapLoaded() {
@@ -122,12 +117,14 @@ public class Map extends Activity implements OnMapReadyCallback, GoogleMap.OnMap
 
         map.addMarker(new MarkerOptions()
         .position(new LatLng(photoLatitude, photoLongitude))
-        .title("Taken here"));
+        .title("Taken here")
+        ).showInfoWindow();
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(photoLatitude, photoLongitude), 14.0f));
 
         map.addMarker(new MarkerOptions()
         .position(new LatLng(userLatitude, userLongitude))
-        .title("Your position"));
+        .title("Your position")
+        ).showInfoWindow();
     }
     @Override
     public void onResume() {
@@ -141,5 +138,27 @@ public class Map extends Activity implements OnMapReadyCallback, GoogleMap.OnMap
         // Unregister the Sensor Manager onPause
         mSensorManager.unregisterListener(mShakeDetector);
         super.onPause();
+    }
+    @Override
+    protected void onStop() {
+        unregisterReceiver(receiver);
+        super.onStop();
+    }
+    private class MyReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context arg0, Intent arg1) {
+            if(map != null){
+
+                userLatitude = arg1.getDoubleExtra("Latitude", 0);
+                userLongitude = arg1.getDoubleExtra("Longitude", 0);
+
+                // display the new marker on the map
+                map.addMarker(new MarkerOptions()
+                        .position(new LatLng(userLatitude, userLongitude))
+                        .title("New position")
+                ).showInfoWindow();
+            }
+        }
     }
 }

@@ -9,38 +9,34 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
-import android.hardware.Camera;
-import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.LinearLayout;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Toast;
-
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+
+
+import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 
 import static com1032.cw2.ms01288.ms01288_assignment2.MainActivity.imageDB;
 
 public class PhotoFeed extends AppCompatActivity {
 
-    private String[] columnNames = {"TIMESTAMP","IMAGEDATA","LAT","LON"};
+    private String[] columnNames = {"IMAGEDATA","LAT","LON"};
     public static final String DOWNLOAD_DONE = "DOWNLOAD_DONE";
     private Cursor images = null;
     private BroadcastReceiver receiver;
     private LinearLayout root;
-    private ScrollView scrollView;
     private LinearLayout innerLayout;
     private Bitmap bitmap;
     private HashMap<Integer, Bitmap> imageToBitmap = new HashMap<>();
@@ -49,14 +45,16 @@ public class PhotoFeed extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_photo_feed);
-
+        if(getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE){
+            setContentView(R.layout.activity_photo_feed_land);
+        }else{
+            setContentView(R.layout.activity_photo_feed);
+        }
         SQLiteDatabase db = imageDB.getReadableDatabase();
         // get contents of 'images' table and store it in database
         images = db.query("images", columnNames, null, null, null, null, null);
 
         root = (LinearLayout) findViewById(R.id.photoFeedLayout); // root LinearLayout
-        scrollView = (ScrollView) findViewById(R.id.scrollView); // ScrollView that holds innerLayout
         innerLayout = (LinearLayout) findViewById(R.id.innerLayout); // put image inside this layout
 
         runThread(); // start a UI thread
@@ -69,6 +67,7 @@ public class PhotoFeed extends AppCompatActivity {
          * this is to save memory so that Bitmap don't need to be re-created
          * every time PhotoFeed activity is recreated
          */
+
         int counter = 0;
         if(imageToBitmap != null){
             for (Bitmap bm: imageToBitmap.values()) { // iterate through Bitmap objects
@@ -174,7 +173,6 @@ public class PhotoFeed extends AppCompatActivity {
                                             Intent intent = new Intent(PhotoFeed.this, DownloadImageService.class);
                                             startService(intent);
 
-
                                             IntentFilter filter = new IntentFilter(DOWNLOAD_DONE);
                                             // register the receiver with the filter that
                                             // tells the activity that the download is over
@@ -187,6 +185,11 @@ public class PhotoFeed extends AppCompatActivity {
                                                             "Download Complete", Toast.LENGTH_LONG).show();
                                                 }
                                             };
+                                            try{
+                                                unregisterReceiver(receiver);
+                                            } catch(IllegalArgumentException e){
+                                                // ignore
+                                            }
                                             return true;
                                         }
                                     });
@@ -204,5 +207,17 @@ public class PhotoFeed extends AppCompatActivity {
                 }
             }
         }.start();
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.item2, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        imageDB.clearData();
+        root.removeAllViews();
+        return true;
     }
 }
