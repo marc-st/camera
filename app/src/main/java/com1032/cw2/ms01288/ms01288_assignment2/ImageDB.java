@@ -27,6 +27,10 @@ public class ImageDB extends SQLiteOpenHelper {
         createTable(db);
     }
 
+    /** called on onCreate
+     *
+     * @param db
+     */
     private void createTable(SQLiteDatabase db) {
         /** immediately create table when imageDB instance created
          *  this table holds the byte array as well as latitude and longitude
@@ -48,6 +52,7 @@ public class ImageDB extends SQLiteOpenHelper {
 
         createTable(db);
     }
+
     public void clearData(){
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -57,6 +62,13 @@ public class ImageDB extends SQLiteOpenHelper {
 
         createTable(db);
     }
+
+    /** Method used to insert a row of data
+     * to the database
+     * @param imageData
+     * @param lat
+     * @param lon
+     */
     public void insertData(byte[] imageData, double lat, double lon){
 
         SQLiteDatabase dbImages = this.getWritableDatabase();
@@ -66,9 +78,18 @@ public class ImageDB extends SQLiteOpenHelper {
          * being subject to toString()
          */
         dbImages.insert("images", null, createContentValues(imageData, lat, lon));
+
+        // close database
         this.close();
     }
 
+    /** return a ContentValues object
+     * of all the data items to insert
+     * @param image
+     * @param lat
+     * @param lon
+     * @return ContentValues
+     */
     private ContentValues createContentValues(byte[] image, double lat, double lon) {
 
         ContentValues cv = new ContentValues();

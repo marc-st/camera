@@ -29,6 +29,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public CameraPreview(Context context, Camera camera) {
         super(context);
         mCamera = camera;
+        // make camera portrait mode
         mCamera.setDisplayOrientation(90);
 
         mHolder = getHolder();
@@ -36,21 +37,20 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.v("surfaceCreated", "surface is created");
+        // surface created
         try {
             mCamera.setPreviewDisplay(holder);
             mCamera.startPreview();
         } catch (IOException e) {
-            Log.d(TAG, "Error setting camera preview: " + e.getMessage());
+            // error in setting camera preview
         }
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.v("surfaceDestroyed", "surface is destroyed");
+        // surface destroyed
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-        Log.v("surface Changed", "rotation");
 
         if (mHolder.getSurface() == null){
             // preview surface does not exist

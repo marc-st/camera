@@ -21,9 +21,19 @@ public class LocationListenerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        // initialise intent to be sent back via BroadcastReceiver
         intent = new Intent(LOCATION_RECEIVED);
     }
 
+    /** same as onStart (now deprecated for Service)
+     *  initialise location manager and set up
+     *  listeners for changes in location
+     *
+     * @param intent
+     * @param flags
+     * @param startId
+     * @return int
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
@@ -43,6 +53,7 @@ public class LocationListenerService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        // no longer listen for changes
         locationManager.removeUpdates(listener);
     }
 
@@ -50,8 +61,10 @@ public class LocationListenerService extends Service {
 
         public void onLocationChanged(final Location loc) {
 
+            // put latitude and longitude inside intents
             intent.putExtra("Latitude", loc.getLatitude());
             intent.putExtra("Longitude", loc.getLongitude());
+            // send broadcast back to Map
             sendBroadcast(intent);
         }
         public void onProviderDisabled(String provider) {}

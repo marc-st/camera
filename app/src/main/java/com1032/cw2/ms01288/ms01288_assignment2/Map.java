@@ -28,13 +28,17 @@ public class Map extends Activity implements OnMapReadyCallback, GoogleMap.OnMap
 
     private GoogleMap map = null;
 
+    // the images coordinates
     private double photoLatitude;
     private double photoLongitude;
 
+    // the user's coordinates
     private double userLatitude;
     private double userLongitude;
 
+    // custom broadcast receiver
     private MyReceiver receiver;
+
     public static final String LOCATION_RECEIVED = "LOCATION_RECEIVED";
 
     // The following are used for the shake detection
@@ -93,8 +97,8 @@ public class Map extends Activity implements OnMapReadyCallback, GoogleMap.OnMap
     protected void onStart() {
 
         // register a receiver to listen for a broadcast back from LocationListenerService
-        // latitude and longitude coordinate will be sent back within the intent
-        // intent filter will match the filter which is set in LocationListenerService
+        // latitude and longitude coordinate will be sent back within the intent.
+        // Intent filter will match the filter which is set in LocationListenerService
         receiver = new MyReceiver();
         IntentFilter filter = new IntentFilter(LOCATION_RECEIVED);
         registerReceiver(receiver, filter);
@@ -115,12 +119,14 @@ public class Map extends Activity implements OnMapReadyCallback, GoogleMap.OnMap
 
         map = googleMap;
 
+        // add a marker for place at which the picture was taken
         map.addMarker(new MarkerOptions()
         .position(new LatLng(photoLatitude, photoLongitude))
         .title("Taken here")
         ).showInfoWindow();
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(photoLatitude, photoLongitude), 14.0f));
 
+        // add a marker for the user's position
         map.addMarker(new MarkerOptions()
         .position(new LatLng(userLatitude, userLongitude))
         .title("Your position")

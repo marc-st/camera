@@ -33,21 +33,29 @@ import static com1032.cw2.ms01288.ms01288_assignment2.MainActivity.imageDB;
 public class PhotoFeed extends AppCompatActivity {
 
     private String[] columnNames = {"IMAGEDATA","LAT","LON"};
-    public static final String DOWNLOAD_DONE = "DOWNLOAD_DONE";
     private Cursor images = null;
+
+    public static final String DOWNLOAD_DONE = "DOWNLOAD_DONE";
     private BroadcastReceiver receiver;
+
     private LinearLayout root;
     private LinearLayout innerLayout;
+
     private Bitmap bitmap;
+
     private HashMap<Integer, Bitmap> imageToBitmap = new HashMap<>();
     private ArrayList<Bitmap> bitmapsFromInstanceState = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // onCreate is always called on orientation change
+
         if(getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE){
+            // if current orientation is landscape, use landscape layout in XML
             setContentView(R.layout.activity_photo_feed_land);
         }else{
+            // if current orientation is portrait, use portrait layout in XML
             setContentView(R.layout.activity_photo_feed);
         }
         SQLiteDatabase db = imageDB.getReadableDatabase();
@@ -99,9 +107,16 @@ public class PhotoFeed extends AppCompatActivity {
             public void run() {
                 if(images.moveToFirst()){
                     try {
+                        /** open a UI thread
+                         * so that the display can be changed within
+                         * the thread
+                         */
                         runOnUiThread(new Runnable() {
 
+                            // Array of imageViews
                             ImageView[] imageViews = new ImageView[12];
+
+                            // Map the image's index in the array to it's coordinates
                             HashMap<Integer, double[]> imageToCoords = new HashMap<>();
 
                             int counter = 0;
@@ -116,6 +131,9 @@ public class PhotoFeed extends AppCompatActivity {
                                     final double lon = images.getDouble(images.getColumnIndex("LON"));
                                     final double[] coordinates = new double[]{lat, lon};
 
+                                    /** this if statements runs when
+                                     * Activity loaded for first time
+                                     */
                                     if(bitmapsFromInstanceState == null){
 
                                         // get Blob of byte data from Cursor objects
@@ -134,6 +152,10 @@ public class PhotoFeed extends AppCompatActivity {
                                         // create new scaled and rotated bitmap
                                         bitmap = Bitmap.createBitmap(originalBM, 0, 0, originalBM.getWidth(), originalBM.getHeight(), mat, true);
                                     }else{
+                                        /** if the activity has been re-created
+                                         *  then bitmaps have been loaded and stored
+                                         *  in the Bundle on saveInstanceState
+                                         */
                                         bitmap = bitmapsFromInstanceState.get(index);
                                     }
 
@@ -146,8 +168,10 @@ public class PhotoFeed extends AppCompatActivity {
                                     imageViews[index].setLayoutParams(imParams);
                                     imageViews[index].setImageBitmap(bitmap);
                                     imageViews[index].getAdjustViewBounds();
+
                                     // map image index to bitmap object
                                     imageToBitmap.put(index, bitmap);
+
                                     // map image index to coordinate array
                                     imageToCoords.put(index, coordinates);
 
@@ -170,6 +194,7 @@ public class PhotoFeed extends AppCompatActivity {
                                             // set global variable to bitmap object
                                             // more memory safe way than sending bitmap in Intent
                                             ImageTransfer.img = imageToBitmap.get(index);
+
                                             Intent intent = new Intent(PhotoFeed.this, DownloadImageService.class);
                                             startService(intent);
 
@@ -214,6 +239,13 @@ public class PhotoFeed extends AppCompatActivity {
         inflater.inflate(R.menu.item2, menu);
         return true;
     }
+
+    /** when delete button is pressed
+     *  clear all the views on the screen
+     *  and clear data from database
+     * @param item
+     * @return boolean
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         imageDB.clearData();

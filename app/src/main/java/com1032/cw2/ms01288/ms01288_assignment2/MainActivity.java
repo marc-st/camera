@@ -84,8 +84,10 @@ public class MainActivity extends AppCompatActivity {
     }
     private void releaseCamera(){
         if (mCamera != null){
+
             mCamera.release();        // release the camera for other applications
             mCamera = null;           // set Camera object back to null
+
             mPreview.getHolder().removeCallback(mPreview);
         }
     }
